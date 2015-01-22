@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-// 0xFFC0 location
-// FFH D8H
+#include <stdint.h>
 
 typedef struct
 {
@@ -37,30 +35,26 @@ void file_close (fileDesc **f)
   free (*f);
 }
 
-void read_beginning (char *location)
+int check_is_jpeg (fileDesc *f)
 {
-  fileDesc *f;
-  uint test = 0;
-  int i;
+  uint32_t beginning;
 
-  file_start (&f, location);
-  printf ("file location: %s\n\n", f->filename);
-
-  for (i = 0; i < 10; i++) {
-    fseek (f->fp, i, SEEK_SET);
-    fread (&test, 1, 1, f->fp);
-    printf ("%02x\n", test);
-  }
-
-  file_close (&f);
+  fseek (f->fp, 0, SEEK_SET);
+  fread (&beginning, 3, 1, f->fp);
+  return (beginning == 0xffd8ff);
 }
 
 int main(int argc, char *argv[])
 {
+  fileDesc *f;
+  char *location = argv[1];
+
   printf ("Let's play with jpeg image files!\n");
 
-  char *location = argv[1];
-  read_beginning (location);
+  file_start (&f, location);
+  printf ("file location: %s\n\n", f->filename);
+  printf ("is it jpeg? %s\n", check_is_jpeg (f)? "yes" : "no");
 
+  file_close (&f);
   return 0;
 }

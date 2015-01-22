@@ -65,8 +65,6 @@ int check_is_jpeg (fileDesc *f)
       return 0;
   }
 
-  fseek (f->fp, 0, SEEK_SET);
-  f->read_position = 0;
   return 1;
 }
 

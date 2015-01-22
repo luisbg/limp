@@ -37,22 +37,22 @@ void file_close (fileDesc **f)
 
 int check_is_jpeg (fileDesc *f)
 {
-  uint8_t beginning[2] = {0xff, 0xd8};
-  uint8_t end[2] = {0xd9, 0xff};
+  uint8_t soi[2] = {0xff, 0xd8};    /* Start Of Image marker */
+  uint8_t eoi[2] = {0xd9, 0xff};    /* End Of Image marker */
   uint8_t r;
   int i;
 
   for (i = 0; i < 2; i++) {
     fseek (f->fp, i, SEEK_SET);
     fread (&r, 1, 1, f->fp);
-    if (r != beginning[i])
+    if (r != soi[i])
       return 0;
   }
 
   for (i = 1; i < 3; i++) {
     fseek (f->fp, -1 * i, SEEK_END);
     fread (&r, 1, 1, f->fp);
-    if (r != end[i - 1])
+    if (r != eoi[i - 1])
       return 0;
   }
 

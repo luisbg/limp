@@ -38,6 +38,7 @@ void file_close (fileDesc **f)
 int check_is_jpeg (fileDesc *f)
 {
   uint8_t beginning[2] = {0xff, 0xd8};
+  uint8_t end[2] = {0xd9, 0xff};
   uint8_t r;
   int i;
 
@@ -48,7 +49,15 @@ int check_is_jpeg (fileDesc *f)
       return 0;
   }
 
-  f->read_position = i;
+  for (i = 1; i < 3; i++) {
+    fseek (f->fp, -1 * i, SEEK_END);
+    fread (&r, 1, 1, f->fp);
+    if (r != end[i - 1])
+      return 0;
+  }
+
+  fseek (f->fp, 0, SEEK_SET);
+  f->read_position = 0;
   return 1;
 }
 

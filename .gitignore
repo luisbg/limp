@@ -1,0 +1,5 @@
+.gitignore
+limp
+limp.o
+*jpeg
+*jpg

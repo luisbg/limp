@@ -27,8 +27,19 @@ typedef struct
 {
   int width;
   int height;
-  int color_components;
+  int num_components;
 } sof;                 /* Start of Frame */
+
+typedef struct
+{
+  int soi;
+  int app;
+  int* dqt;
+  int* sof;
+  int* ht;
+  int* sos;
+  int eoi;
+} segments;            /* Segments */
 
 typedef struct
 {
@@ -37,6 +48,25 @@ typedef struct
   uint read_position;  /* position of fd */
   uint size;           /* file size */
 } fileDesc;
+
+int markers[7] = {0xd8,     // start of image
+                  0xe0,     // app0
+                  0xdb,     // quantization table
+                  0xc0,     // start of frame
+                  0xc4,     // huffman table
+                  0xda,     // start of scan
+                  0xd9};    // end of image
+segments seg;
+
+void init_seg () {
+  seg.soi = 0;
+  seg.app = 0;
+  seg.dqt = calloc (81, sizeof (int));
+  seg.sof = calloc (32768, sizeof(int));
+  seg.ht =  calloc (16, sizeof (int));
+  seg.sos = calloc (8, sizeof (int));
+  seg.eoi = 0;
+}
 
 void file_start (fileDesc **f, char *location)
 {
@@ -97,6 +127,7 @@ int check_is_jpeg (fileDesc *f)
   return 1;
 }
 
+/* Get the Start of Frame */
 sof * get_sof (fileDesc *f)
 {
   sof *ret = (sof *) malloc (sizeof (sof));
@@ -134,6 +165,90 @@ sof * get_sof (fileDesc *f)
 }
 
 int main(int argc, char *argv[])
+void find_markers (fileDesc *f)
+{
+  uint16_t marker_start = 0xff;
+  uint16_t dqt[2] = {0xff, 0xdb};
+  uint16_t r0 = 0, r1 = 0;
+  int n, m, j, found;
+
+  for (n = 0; n < f->size; n++) {
+    r0 = read_byte (f, n);
+    if (r0 == marker_start) {    // 0xff starts a segment
+      r1 = read_byte (f, n + 1);
+
+      if (r1 == 0x00)    // escape marker. not a segment.
+        continue;
+
+      found = 0;
+      for (m = 0; m < 8; m++) {  // compare with markers
+        if (r1 == markers[m]) {
+          found = 1;
+          break;
+        }
+      }
+      if (!found)
+        continue;
+
+      switch (m) {    // found a segment, add it to seg
+        case 0:
+          seg.soi = n;
+          break;
+        case 1:
+          seg.app = n;
+          break;
+        case 2:
+          for (j = 0; seg.dqt[j] != 0; j++);
+          seg.dqt[j] = n;
+          break;
+        case 3:
+          for (j = 0; seg.sof[j] != 0; j++);
+          seg.sof[j] = n;
+          break;
+        case 4:
+          for (j = 0; seg.ht[j] != 0; j++);
+          seg.ht[j] = n;
+          break;
+        case 5:
+          for (j = 0; seg.sos[j] != 0; j++);
+          seg.sos[j] = n;
+          break;
+        case 6:
+          seg.eoi = n;
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  printf ("soi %d\n", seg.soi);
+  printf ("app %d\n", seg.app);
+
+  printf ("dqt %d.", seg.dqt[0]);
+  for (j = 1; seg.dqt[j] != 0; j++)
+    printf ("  %d.", seg.dqt[j]);
+  printf ("\n");
+
+  printf ("sof %d.", seg.sof[0]);
+  for (j = 1; seg.sof[j] != 0; j++)
+    printf (" %d.", seg.sof[j]);
+  printf ("\n");
+
+  printf ("ht  %d.", seg.ht[0]);
+  for (j = 1; seg.ht[j] != 0; j++)
+    printf ("  %d.", seg.ht[j]);
+  printf ("\n");
+
+  printf ("sos %d.", seg.sos[0]);
+  for (j = 1; seg.sos[j] != 0; j++)
+    printf ("  %d.", seg.sos[j]);
+  printf ("\n");
+
+  printf ("eoi %d\n", seg.eoi);
+}
+
+int main (int argc, char *argv[])
 {
   fileDesc *f;
   char *location = argv[1];
@@ -141,12 +256,13 @@ int main(int argc, char *argv[])
   printf ("Let's play with jpeg image files!\n");
 
   file_start (&f, location);
-  printf ("file location: %s\n\n", f->filename);
-
   if (!check_is_jpeg (f)) {
     printf ("File is not jpeg\nClosing\n");
     return 0;
   }
+
+  init_seg ();
+  find_markers (f);
 
   sof *s = get_sof (f);
   printf ("height is %d\n", s->height);

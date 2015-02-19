@@ -133,38 +133,26 @@ sof * get_sof (fileDesc *f)
   sof *ret = (sof *) malloc (sizeof (sof));
   uint16_t sof[2] = {0xff, 0xc0};
   uint16_t r0 = 0, r1 = 0;
-  int i = 0, found = 0;
+  int pos = seg.sof[0];
 
-  while (!found) {
-    r0 = read_byte (f, i);
-    if (r0 == sof[0]) {
-      r1 = read_byte (f, i + 1);
-      if (r1 == sof[1])
-        break;    /* i = location of sof */
-    }
-
-    i++;
-  }
-
-  i += 5;    /* in sof, skip segment length and precision */
-  r0 = read_byte (f, i);    /* read height of image */
-  i++;
-  r1 = read_byte (f, i);
+  pos += 5;    /* in sof, skip segment length and precision */
+  r0 = read_byte (f, pos);    /* read height of image */
+  pos++;
+  r1 = read_byte (f, pos);
   ret->height = (r0 * 256) + r1;
 
-  i++;
-  r0 = read_byte (f, i);    /* read width of image */
-  i++;
-  r1 = read_byte (f, i);
+  pos++;
+  r0 = read_byte (f, pos);    /* read width of image */
+  pos++;
+  r1 = read_byte (f, pos);
   ret->width = (r0 * 256) + r1;
 
-  i++;
-  ret->num_components = read_byte (f, i);
+  pos++;
+  ret->num_components = read_byte (f, pos);
 
   return ret;
 }
 
-int main(int argc, char *argv[])
 void find_markers (fileDesc *f)
 {
   uint16_t marker_start = 0xff;

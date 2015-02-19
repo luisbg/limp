@@ -27,6 +27,7 @@ typedef struct
 {
   int width;
   int height;
+  int color_components;
 } sof;                 /* Start of Frame */
 
 typedef struct
@@ -119,6 +120,9 @@ sof * get_sof (fileDesc *f)
   r1 = read_byte (f, i);
   ret->width = (r0 * 256) + r1;
 
+  i++;
+  ret->color_components = read_byte (f, i);
+
   return ret;
 }
 
@@ -140,6 +144,10 @@ int main(int argc, char *argv[])
   sof *s = get_sof (f);
   printf ("height is %d\n", s->height);
   printf ("width is %d\n", s->width);
+  if (s->color_components == 3)
+    printf ("color image\n");
+  else
+    printf ("grayscale image\n");
 
   file_close (&f);
   return 0;

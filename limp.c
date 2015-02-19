@@ -35,6 +35,7 @@ typedef struct
   char *filename;      /* filename */
   FILE *fp;            /* open file pointer */
   uint read_position;  /* position of fd */
+  uint size;           /* file size */
 } fileDesc;
 
 void file_start (fileDesc **f, char *location)
@@ -44,11 +45,17 @@ void file_start (fileDesc **f, char *location)
   (*f)->fp = NULL;
   (*f)->read_position = 0;
 
+  printf ("opening file: %s\n", location);
+
   (*f)->fp = fopen ((*f)->filename, "rb");
   if (!(*f)->fp) {
     perror ("Unable to open file :(\n");
     return;
   }
+
+  fseek((*f)->fp, 0, SEEK_END);
+  (*f)->size = ftell((*f)->fp);
+  printf ("file size: %d\n", (*f)->size);
 }
 
 void file_close (fileDesc **f)

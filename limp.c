@@ -19,10 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "file_io.h"
 #include "limp.h"
 
 int markers[7] = {0xd8,     // start of image
@@ -43,42 +43,6 @@ void init_seg ()
   seg.ht =  calloc (16, sizeof (int));
   seg.sos = calloc (8, sizeof (int));
   seg.eoi = 0;
-}
-
-void file_start (fileDesc **f, char *location)
-{
-  *f = (fileDesc *) malloc (sizeof (fileDesc));
-  (*f)->filename = location;
-  (*f)->fp = NULL;
-  (*f)->read_position = 0;
-
-  printf ("opening file: %s\n", location);
-
-  (*f)->fp = fopen ((*f)->filename, "rb");
-  if (!(*f)->fp) {
-    perror ("Unable to open file :(\n");
-    return;
-  }
-
-  fseek((*f)->fp, 0, SEEK_END);
-  (*f)->size = ftell((*f)->fp);
-  printf ("file size: %d\n", (*f)->size);
-}
-
-void file_close (fileDesc **f)
-{
-  fclose ((*f)->fp);
-  free (*f);
-}
-
-uint8_t read_byte (fileDesc *f, int position)
-{
-  uint8_t ret;
-
-  fseek (f->fp, position, SEEK_SET);
-  fread (&ret, 1, 1, f->fp);
-
-  return ret;
 }
 
 int check_is_jpeg (fileDesc *f)

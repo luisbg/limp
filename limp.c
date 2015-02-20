@@ -23,31 +23,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-typedef struct
-{
-  int width;
-  int height;
-  int num_components;
-} sof;                 /* Start of Frame */
-
-typedef struct
-{
-  int soi;
-  int app;
-  int* dqt;
-  int* sof;
-  int* ht;
-  int* sos;
-  int eoi;
-} segments;            /* Segments */
-
-typedef struct
-{
-  char *filename;      /* filename */
-  FILE *fp;            /* open file pointer */
-  uint read_position;  /* position of fd */
-  uint size;           /* file size */
-} fileDesc;
+#include "limp.h"
 
 int markers[7] = {0xd8,     // start of image
                   0xe0,     // app0
@@ -58,7 +34,8 @@ int markers[7] = {0xd8,     // start of image
                   0xd9};    // end of image
 segments seg;
 
-void init_seg () {
+void init_seg ()
+{
   seg.soi = 0;
   seg.app = 0;
   seg.dqt = calloc (81, sizeof (int));

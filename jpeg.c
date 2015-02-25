@@ -22,13 +22,16 @@
 #include "jpeg.h"
 #include "limp.h"
 
-int markers[7] = {0xd8,     // start of image
-                  0xe0,     // app0
-                  0xdb,     // quantization table
-                  0xc0,     // start of frame
-                  0xc4,     // huffman table
-                  0xda,     // start of scan
-                  0xd9};    // end of image
+#define NUM_MARKERS 8
+
+int markers[NUM_MARKERS] = {0xd8,     // start of image
+                            0xe0,     // app0
+                            0xdb,     // quantization table
+                            0xc0,     // start of frame - baseline
+                            0xc2,     // start of frame - progressive
+                            0xc4,     // huffman table
+                            0xda,     // start of scan
+                            0xd9};    // end of image
 segments seg;
 
 void init_seg ()
@@ -107,7 +110,7 @@ void find_markers (fileDesc *f)
         continue;
 
       found = 0;
-      for (m = 0; m < 8; m++) {  // compare with markers
+      for (m = 0; m < NUM_MARKERS; m++) {  // compare with markers
         if (r1 == markers[m]) {
           found = 1;
           break;
@@ -128,18 +131,21 @@ void find_markers (fileDesc *f)
           seg.dqt[j] = n;
           break;
         case 3:
+        case 4:
+          seg.progressive = (m == 4);
+
           for (j = 0; seg.sof[j] != 0; j++);
           seg.sof[j] = n;
           break;
-        case 4:
+        case 5:
           for (j = 0; seg.ht[j] != 0; j++);
           seg.ht[j] = n;
           break;
-        case 5:
+        case 6:
           for (j = 0; seg.sos[j] != 0; j++);
           seg.sos[j] = n;
           break;
-        case 6:
+        case 7:
           seg.eoi = n;
           break;
         default:
@@ -156,7 +162,7 @@ void find_markers (fileDesc *f)
     printf ("  %d.", seg.dqt[j]);
   printf ("\n");
 
-  printf ("sof %d.", seg.sof[0]);
+  printf ("sof %s %d.", seg.progressive? "progressive": "baseline", seg.sof[0]);
   for (j = 1; seg.sof[j] != 0; j++)
     printf (" %d.", seg.sof[j]);
   printf ("\n");

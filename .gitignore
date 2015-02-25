@@ -1,5 +1,8 @@
 .gitignore
 limp
 limp.o
+file_io.o
+jpeg.o
 *jpeg
 *jpg
+samples

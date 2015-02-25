@@ -39,8 +39,9 @@ typedef struct
   int* dqt;
   int* sof;
   int* ht;
-  int* sos;;;;
+  int* sos;
   int eoi;
+  int progressive;
 } segments;            /* Segments */
 
 

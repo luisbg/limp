@@ -26,27 +26,7 @@ typedef struct
 {
   int width;
   int height;
-  int num_components;
-} sof;                 /* Start of Frame */
-
-typedef struct
-{
-  int soi;
-  int app;
-  int* dqt;
-  int* sof;
-  int* ht;
-  int* sos;;;;
-  int eoi;
-} segments;            /* Segments */
-
-
-void init_seg ();
-void file_start (fileDesc **f, char *location);
-void file_close (fileDesc **f);
-uint8_t read_byte (fileDesc *f, int position);
-int check_is_jpeg (fileDesc *f);
-sof * get_sof (fileDesc *f);
-void find_markers (fileDesc *f);
+  int format;
+} image;
 
 #endif

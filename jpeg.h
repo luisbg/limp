@@ -19,24 +19,35 @@
  * USA
  */
 
-#ifndef __FILE_IO_H__
-#define __FILE_IO_H__
+#ifndef __JPEG_H__
+#define __JPEG_H__
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
+#include "file_io.h"
 
 typedef struct
 {
-  char *filename;      /* filename */
-  FILE *fp;            /* open file pointer */
-  uint read_position;  /* position of fd */
-  uint size;           /* file size */
-} fileDesc;
+  int width;
+  int height;
+  int num_components;
+} sof;                 /* Start of Frame */
+
+typedef struct
+{
+  int soi;
+  int app;
+  int* dqt;
+  int* sof;
+  int* ht;
+  int* sos;;;;
+  int eoi;
+} segments;            /* Segments */
 
 
+void init_seg ();
 void file_start (fileDesc **f, char *location);
-void file_close (fileDesc **f);
-uint8_t read_byte (fileDesc *f, int position);
+int check_is_jpeg (fileDesc *f);
+sof * get_sof (fileDesc *f);
+void find_markers (fileDesc *f);
 
 #endif

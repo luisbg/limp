@@ -19,9 +19,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "file_io.h"
 
 void file_start (fileDesc **f, char *location)

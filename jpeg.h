@@ -42,6 +42,7 @@ typedef struct
   int* sos;
   int eoi;
   int progressive;
+  int comment;
 } segments;            /* Segments */
 
 
@@ -49,6 +50,7 @@ void init_seg ();
 void file_start (fileDesc **f, char *location);
 int check_is_jpeg (fileDesc *f);
 sof * get_sof (fileDesc *f);
+char * get_comment (fileDesc *f, segments seg);
 void find_markers (fileDesc *f);
 
 #endif

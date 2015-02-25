@@ -22,7 +22,7 @@
 #include "jpeg.h"
 #include "limp.h"
 
-#define NUM_MARKERS 8
+#define NUM_MARKERS 9
 
 int markers[NUM_MARKERS] = {0xd8,     // start of image
                             0xe0,     // app0
@@ -31,6 +31,7 @@ int markers[NUM_MARKERS] = {0xd8,     // start of image
                             0xc2,     // start of frame - progressive
                             0xc4,     // huffman table
                             0xda,     // start of scan
+                            0xfe,     // comment
                             0xd9};    // end of image
 segments seg;
 
@@ -94,6 +95,28 @@ sof * get_sof (fileDesc *f)
   return ret;
 }
 
+/* Get comment */
+char * get_comment (fileDesc *f, segments seg)
+{
+  char *ret = NULL;
+  uint16_t size = 0;
+  int pos = seg.comment;
+
+  if (pos) {
+    pos += 2;    /* skip comment segment marker */
+    size = read_byte (f, pos);
+    pos++;
+    size = (size * 256) + read_byte (f, pos) -1;
+    printf ("size of comment: %d\n", size);
+
+    ret = (char *) calloc (size, sizeof (char));
+    read_bytes (f, pos, size, ret);
+    ret[size] = '\0';
+  }
+
+  return ret;
+}
+
 void find_markers (fileDesc *f)
 {
   uint16_t marker_start = 0xff;
@@ -146,6 +169,9 @@ void find_markers (fileDesc *f)
           seg.sos[j] = n;
           break;
         case 7:
+          seg.comment = n;
+          break;
+        case 8:
           seg.eoi = n;
           break;
         default:
@@ -176,6 +202,11 @@ void find_markers (fileDesc *f)
   for (j = 1; seg.sos[j] != 0; j++)
     printf ("  %d.", seg.sos[j]);
   printf ("\n");
+
+  if (!seg.comment)
+    printf ("comment %d\n", seg.comment);
+  else
+    printf ("comment %d: %s\n", seg.comment, get_comment (f, seg));
 
   printf ("eoi %d\n", seg.eoi);
 }

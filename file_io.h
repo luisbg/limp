@@ -39,5 +39,6 @@ void file_start (fileDesc **f, char *location);
 void file_close (fileDesc **f);
 uint8_t read_byte (fileDesc *f, int position);
 void read_bytes (fileDesc *f, int position, int size, char *output);
+void write_byte (fileDesc *f, int position, uint8_t *input);
 
 #endif

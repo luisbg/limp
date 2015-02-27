@@ -30,7 +30,7 @@ void file_start (fileDesc **f, char *location)
 
   printf ("opening file: %s\n", location);
 
-  (*f)->fp = fopen ((*f)->filename, "rb");
+  (*f)->fp = fopen ((*f)->filename, "rb+");
   if (!(*f)->fp) {
     perror ("Unable to open file :(\n");
     return;
@@ -61,4 +61,10 @@ void read_bytes (fileDesc *f, int position, int size, char *output)
 {
   fseek (f->fp, position, SEEK_SET);
   fread (output, size, 1, f->fp);
+}
+
+void write_byte (fileDesc *f, int position, uint8_t *input)
+{
+  fseek (f->fp, position, SEEK_SET);
+  fwrite (input, 1, 1, f->fp);
 }

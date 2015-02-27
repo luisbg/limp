@@ -41,6 +41,8 @@ typedef struct
   int* ht;
   int* sos;
   int eoi;
+
+  int* mlist;
   int progressive;
   int comment;
 } segments;            /* Segments */

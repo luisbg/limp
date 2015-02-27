@@ -48,6 +48,8 @@ int main (int argc, char *argv[])
   else
     printf ("grayscale image\n");
 
+  mess_with_sos (f, 5);
+
   file_close (&f);
   return 0;
 }

@@ -21,6 +21,7 @@
 
 #include "jpeg.h"
 #include "limp.h"
+#include <time.h>
 
 #define NUM_MARKERS 9
 
@@ -44,6 +45,7 @@ void init_seg ()
   seg.ht =  calloc (16, sizeof (int));
   seg.sos = calloc (8, sizeof (int));
   seg.eoi = 0;
+  seg.mlist = calloc (327880, sizeof (int));
 }
 
 int check_is_jpeg (fileDesc *f)
@@ -131,6 +133,9 @@ void find_markers (fileDesc *f)
       if (r1 == 0x00)    // escape marker. not a segment.
         continue;
 
+      for (j = 0; seg.mlist[j] != 0; j++);
+      seg.mlist[j] = n;
+
       found = 0;
       for (m = 0; m < NUM_MARKERS; m++) {  // compare with markers
         if (r1 == markers[m]) {
@@ -208,4 +213,48 @@ void find_markers (fileDesc *f)
     printf ("comment %#06x: %s\n", seg.comment, get_comment (f, seg));
 
   printf ("eoi %#06x\n", seg.eoi);
+}
+
+/* return a random number between 0 and limit inclusive. */
+int rand_lim(int limit) {
+  int divisor = RAND_MAX/(limit+1);
+  int ret;
+
+  srand ( time(NULL) );
+  do {
+    ret = rand() / divisor;
+  } while (ret > limit);
+
+  return ret;
+}
+
+void mess_with_sos (fileDesc *f, int entropy)
+{
+  uint16_t size = 0;
+  uint8_t v;
+  int num_changes, total_num_changes = 0;
+  int sos, pos;
+  int j, k;
+
+  for (j = 0; seg.sos[j] != 0; j++) {
+    sos = seg.sos[j];
+
+    for (k = 0; seg.mlist[k] != sos  && seg.mlist[k] == 0; j++);
+    if (seg.mlist[k] == 0)
+      return;
+
+    size = seg.mlist[k + 1] - sos - 14;
+
+    num_changes = size * ((float) entropy / 100);
+    total_num_changes += num_changes;
+    for (k = 0; k < num_changes; k++) {
+      pos = sos + rand_lim (size) + 14;
+      v = rand_lim (255);
+      write_byte (f, pos, &v);
+    }
+  }
+
+  printf ("num of changes made: %d\n", total_num_changes);
+
+  return;
 }

@@ -179,33 +179,33 @@ void find_markers (fileDesc *f)
     }
   }
 
-  printf ("soi %d\n", seg.soi);
-  printf ("app %d\n", seg.app);
+  printf ("soi %#06x\n", seg.soi);
+  printf ("app %#06x\n", seg.app);
 
-  printf ("dqt %d.", seg.dqt[0]);
+  printf ("dqt %#06x.", seg.dqt[0]);
   for (j = 1; seg.dqt[j] != 0; j++)
-    printf ("  %d.", seg.dqt[j]);
+    printf ("  %#06x.", seg.dqt[j]);
   printf ("\n");
 
-  printf ("sof %s %d.", seg.progressive? "progressive": "baseline", seg.sof[0]);
+  printf ("sof %#06x %#06x.", seg.progressive? "progressive": "baseline", seg.sof[0]);
   for (j = 1; seg.sof[j] != 0; j++)
-    printf (" %d.", seg.sof[j]);
+    printf (" %#06x.", seg.sof[j]);
   printf ("\n");
 
-  printf ("ht  %d.", seg.ht[0]);
+  printf ("ht  %#06x.", seg.ht[0]);
   for (j = 1; seg.ht[j] != 0; j++)
-    printf ("  %d.", seg.ht[j]);
+    printf ("  %#06x.", seg.ht[j]);
   printf ("\n");
 
-  printf ("sos %d.", seg.sos[0]);
+  printf ("sos %#06x.", seg.sos[0]);
   for (j = 1; seg.sos[j] != 0; j++)
-    printf ("  %d.", seg.sos[j]);
+    printf ("  %#06x.", seg.sos[j]);
   printf ("\n");
 
   if (!seg.comment)
-    printf ("comment %d\n", seg.comment);
+    printf ("no comment\n", seg.comment);
   else
-    printf ("comment %d: %s\n", seg.comment, get_comment (f, seg));
+    printf ("comment %#06x: %s\n", seg.comment, get_comment (f, seg));
 
-  printf ("eoi %d\n", seg.eoi);
+  printf ("eoi %#06x\n", seg.eoi);
 }

@@ -73,7 +73,6 @@ int check_is_jpeg (fileDesc *f)
 sof * get_sof (fileDesc *f)
 {
   sof *ret = (sof *) malloc (sizeof (sof));
-  uint16_t sof[2] = {0xff, 0xc0};
   uint16_t r0 = 0, r1 = 0;
   int pos = seg.sof[0];
 
